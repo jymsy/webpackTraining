@@ -6,24 +6,21 @@ var path = require('path');
 
 module.exports = {
     entry: { //配置入口文件，有几个写几个
-        lc: './js/src/modules/learning_center/index.js',
-        ls: './js/src/modules/learning_system/index.js',
+        app: './src/app.js',
     },
     output: {
-        path: 'js/dist', //输出目录的配置，模板、样式、脚本、图片等资源的路径配置都相对于它
-        publicPath: '/static/js/dist/', //模板、样式、脚本、图片等资源对应的server上的路径
-        filename: '[name].js',            //每个页面对应的主js的生成配置
+        path: 'dist', //输出目录的配置，模板、样式、脚本、图片等资源的路径配置都相对于它
+        publicPath: '', //模板、样式、脚本、图片等资源对应的server上的路径
+        filename: '[name].[chunkhash:8].js',            //每个页面对应的主js的生成配置
         chunkFilename: '[id].chunk.js'   //chunk生成的配置
     },
     module: {
         loaders: [
             {
-                test: /\.tpl$/,
-                loader: 'underscore-template-loader',
-                query: {
-                    engine: 'lodash',
-                    attributes: []
-                }
+                //html模板加载器，可以处理引用的静态资源，默认配置参数attrs=img:src，处理图片的src引用的资源
+                //比如你配置，attrs=img:src img:data-src就可以一并处理data-src引用的资源了，就像下面这样
+                test: /\.html$/,
+                loader: "html?attrs=img:src img:data-src"
             },
             {
                 test: /\.css$/,
@@ -32,7 +29,6 @@ module.exports = {
             {
                 test: /\.(jpg|png|jpeg)$/,
                 loader: 'url?name=images/[name].[ext]&limit=8192'
-                // loader: "file-loader?name=[name].[ext]&publicPath=assets/foo/&outputPath=app/images/"
             }
         ]
     },
@@ -45,18 +41,12 @@ module.exports = {
         jquery: 'jQuery',
     },
     plugins: [
-        new webpack.optimize.CommonsChunkPlugin({
-            name: 'common', // 将公共模块提取，生成名为`vendors`的chunk
-            chunks: ['lc','ls','tc','review', 'purchased', 'p_detail','oraltest'], //提取哪些模块共有的部分
-            minChunks: 4 // 提取至少n个模块共有的部分
-        }),
-        new ExtractTextPlugin('css/[name].css'),
+        new ExtractTextPlugin('css/[name].[chunkhash:8].css'),
         new HtmlWebpackPlugin({
-            filename: path.resolve(__dirname, '../application/modules/learning_system/views/main.php'),
-            template: 'views/main.php',
-            chunks: ['header', 'common', 'ls'],
+            filename: path.resolve(__dirname, './dist/index.html'),
+            template: './src/index.html',
             inject:'body',
-            hash: true
+            // hash: true
         }),
         // new uglifyJsPlugin({
         //     compress: {
